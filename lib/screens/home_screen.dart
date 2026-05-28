@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('首页-狐书'),
+        title: const Text('首页-六趣'),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,

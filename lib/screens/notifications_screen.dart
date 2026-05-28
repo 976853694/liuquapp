@@ -53,7 +53,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
       id: '5',
       type: 'SYSTEM',
       title: '系统通知',
-      content: '欢迎来到狐书社区！',
+      content: '欢迎来到六趣社区！',
       timeAgo: '1天前',
       isRead: true,
     ),

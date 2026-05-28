@@ -178,7 +178,7 @@ class _BannerCardState extends State<BannerCard> with SingleTickerProviderStateM
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '狐书-发现',
+                              '六趣-发现',
                               style: TextStyle(
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold,

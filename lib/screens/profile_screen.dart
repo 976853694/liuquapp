@@ -139,133 +139,142 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF00E676).withOpacity(0.1),
-              Colors.white,
-            ],
+      body: SingleChildScrollView(
+        child: Container(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height - 
+                      MediaQuery.of(context).padding.top - 
+                      kToolbarHeight,
           ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo
-              Container(
-                padding: const EdgeInsets.all(30),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.green.withOpacity(0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.person_outline,
-                  size: 80,
-                  color: Color(0xFF00C853),
-                ),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                '登录后查看更多内容',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '登录后可以发帖、评论、收藏等',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 40),
-              // Login button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Container(
-                  width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF00E676).withOpacity(0.1),
+                Colors.white,
+              ],
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo
+                Container(
+                  padding: const EdgeInsets.all(30),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF00E676), Color(0xFF00C853)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white,
+                    shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF00C853).withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
+                        color: Colors.green.withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        );
-                      },
+                  child: const Icon(
+                    Icons.person_outline,
+                    size: 80,
+                    color: Color(0xFF00C853),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                const Text(
+                  '登录后查看更多内容',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '登录后可以发帖、评论、收藏等',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 40),
+                // Login button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF00E676), Color(0xFF00C853)],
+                      ),
                       borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          '登录 / 注册',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00C853).withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            '登录 / 注册',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              // Browse as guest
-              TextButton(
-                onPressed: () {
-                  // Continue browsing without login
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  '暂不登录，继续浏览',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
+                const SizedBox(height: 16),
+                // Browse as guest
+                TextButton(
+                  onPressed: () {
+                    // Continue browsing without login
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    '暂不登录，继续浏览',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 60),
-              // Features
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Column(
-                  children: [
-                    _buildFeatureItem(Icons.edit_outlined, '发布内容', '分享你的生活点滴'),
-                    const SizedBox(height: 16),
-                    _buildFeatureItem(Icons.favorite_outline, '收藏喜欢', '保存感兴趣的内容'),
-                    const SizedBox(height: 16),
-                    _buildFeatureItem(Icons.chat_bubble_outline, '互动交流', '与其他用户交流互动'),
-                  ],
+                const SizedBox(height: 40),
+                // Features
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Column(
+                    children: [
+                      _buildFeatureItem(Icons.edit_outlined, '发布内容', '分享你的生活点滴'),
+                      const SizedBox(height: 16),
+                      _buildFeatureItem(Icons.favorite_outline, '收藏喜欢', '保存感兴趣的内容'),
+                      const SizedBox(height: 16),
+                      _buildFeatureItem(Icons.chat_bubble_outline, '互动交流', '与其他用户交流互动'),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),

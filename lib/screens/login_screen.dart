@@ -61,98 +61,111 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-              // Logo
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.green.withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.explore,
-                  size: 60,
-                  color: Color(0xFF00C853),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                '狐书',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF00C853),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '发现生活的美好',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 40),
-              // Tab Bar
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
                   ),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          TabBar(
-                            controller: _tabController,
-                            labelColor: const Color(0xFF00C853),
-                            unselectedLabelColor: Colors.grey,
-                            indicatorColor: const Color(0xFF00C853),
-                            indicatorWeight: 3,
-                            labelStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            tabs: const [
-                              Tab(text: '登录'),
-                              Tab(text: '注册'),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 40),
+                        // Logo
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.green.withOpacity(0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
                             ],
                           ),
-                          Expanded(
-                            child: TabBarView(
-                              controller: _tabController,
-                              children: [
-                                _buildLoginTab(),
-                                _buildRegisterTab(),
-                              ],
+                          child: const Icon(
+                            Icons.explore,
+                            size: 60,
+                            color: Color(0xFF00C853),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          '六趣',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF00C853),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '发现生活的美好',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        // Tab Bar
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30),
+                            ),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(30),
+                                    topRight: Radius.circular(30),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 20),
+                                    TabBar(
+                                      controller: _tabController,
+                                      labelColor: const Color(0xFF00C853),
+                                      unselectedLabelColor: Colors.grey,
+                                      indicatorColor: const Color(0xFF00C853),
+                                      indicatorWeight: 3,
+                                      labelStyle: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      tabs: const [
+                                        Tab(text: '登录'),
+                                        Tab(text: '注册'),
+                                      ],
+                                    ),
+                                    Expanded(
+                                      child: TabBarView(
+                                        controller: _tabController,
+                                        children: [
+                                          _buildLoginTab(),
+                                          _buildRegisterTab(),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
