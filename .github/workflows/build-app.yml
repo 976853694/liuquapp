@@ -13,9 +13,9 @@ on:
         default: '1'
 
 jobs:
-  build:
-    name: Build Android & iOS
-    runs-on: macos-latest  # 使用macOS以支持iOS构建
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
     
     steps:
       - name: 📥 Checkout repository
@@ -46,8 +46,6 @@ jobs:
         run: flutter test
         continue-on-error: true
 
-      # ==================== Android 构建 ====================
-      
       - name: 📝 Create Android local.properties
         run: |
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
@@ -73,8 +71,39 @@ jobs:
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
 
-      # ==================== iOS 构建 ====================
-      
+      - name: 📊 Android Build Summary
+        run: |
+          echo "## ✅ Android Build Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          APK_SIZE=$(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)
+          AAB_SIZE=$(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)
+          echo "- **APK**: $APK_SIZE" >> $GITHUB_STEP_SUMMARY
+          echo "- **App Bundle**: $AAB_SIZE" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📱 Installation" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download \`android-apk\` from Artifacts below" >> $GITHUB_STEP_SUMMARY
+          echo "2. Enable 'Unknown Sources' on your device" >> $GITHUB_STEP_SUMMARY
+          echo "3. Install the APK" >> $GITHUB_STEP_SUMMARY
+
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: build-android  # 等待Android构建完成
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Get dependencies
+        run: flutter pub get
+
       - name: 🍎 Check iOS project
         id: check_ios
         run: |
@@ -96,7 +125,7 @@ jobs:
       - name: 🍎 Install CocoaPods dependencies
         run: |
           cd ios
-          pod install
+          pod install || pod install --repo-update
           cd ..
 
       - name: 🍎 Build iOS (No Codesign)
@@ -119,52 +148,14 @@ jobs:
           path: app-unsigned.ipa
           retention-days: 30
 
-      # ==================== 构建信息 ====================
-      
-      - name: 📊 Build Summary
-        if: always()
+      - name: 📊 iOS Build Summary
         run: |
-          echo "## 🎉 Build Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ iOS Build Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-            APK_SIZE=$(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)
-            echo "- ✅ **Android APK**: $APK_SIZE (Ready to install)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- ❌ **Android APK**: Build failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
-            AAB_SIZE=$(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)
-            echo "- ✅ **Android App Bundle**: $AAB_SIZE (For Google Play)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- ❌ **Android App Bundle**: Build failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ -f "app-unsigned.ipa" ]; then
-            IPA_SIZE=$(du -h app-unsigned.ipa | cut -f1)
-            echo "- ✅ **iOS IPA**: $IPA_SIZE (Unsigned, needs re-signing)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- ❌ **iOS IPA**: Build failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
+          IPA_SIZE=$(du -h app-unsigned.ipa | cut -f1)
+          echo "- **IPA**: $IPA_SIZE (Unsigned)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📱 Installation" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Android:**" >> $GITHUB_STEP_SUMMARY
-          echo "1. Download \`android-apk\` from Artifacts below" >> $GITHUB_STEP_SUMMARY
-          echo "2. Enable 'Unknown Sources' on your device" >> $GITHUB_STEP_SUMMARY
-          echo "3. Install the APK" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**iOS:**" >> $GITHUB_STEP_SUMMARY
-          echo "1. Download \`ios-ipa-unsigned\` from Artifacts below" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download \`ios-ipa-unsigned\` from Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "2. Use AltStore, Sideloadly, or Xcode to sign and install" >> $GITHUB_STEP_SUMMARY
           echo "3. See [INSTALL.md](https://github.com/${{ github.repository }}/blob/main/INSTALL.md) for details" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ℹ️ Build Info" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Build Number**: \`${{ github.event.inputs.build_number || github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Build Date**: $(date)" >> $GITHUB_STEP_SUMMARY
