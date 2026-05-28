@@ -97,21 +97,47 @@ jobs:
         run: flutter test
         continue-on-error: true
 
+      - name: Check iOS project
+        id: check_ios
+        run: |
+          if [ -d "ios" ]; then
+            echo "ios_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "ios_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build iOS (No Codesign)
+        if: steps.check_ios.outputs.ios_exists == 'true'
         run: |
           flutter build ios --release --no-codesign
         continue-on-error: true
 
       - name: Create IPA (Unsigned)
+        if: steps.check_ios.outputs.ios_exists == 'true'
         run: |
-          cd build/ios/iphoneos
-          mkdir -p Payload
-          cp -r Runner.app Payload/
-          zip -r app-unsigned.ipa Payload
-          mv app-unsigned.ipa ../../..
+          if [ -d "build/ios/iphoneos/Runner.app" ]; then
+            cd build/ios/iphoneos
+            mkdir -p Payload
+            cp -r Runner.app Payload/
+            zip -r app-unsigned.ipa Payload
+            mv app-unsigned.ipa ../../..
+            echo "IPA created successfully"
+          else
+            echo "Runner.app not found, skipping IPA creation"
+          fi
         continue-on-error: true
 
+      - name: Check if IPA exists
+        id: check_ipa
+        run: |
+          if [ -f "app-unsigned.ipa" ]; then
+            echo "ipa_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "ipa_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload iOS IPA
+        if: steps.check_ipa.outputs.ipa_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ios-ipa-unsigned
@@ -119,7 +145,17 @@ jobs:
           retention-days: 30
         continue-on-error: true
 
+      - name: Check if Runner.app exists
+        id: check_app
+        run: |
+          if [ -d "build/ios/iphoneos/Runner.app" ]; then
+            echo "app_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "app_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload iOS App
+        if: steps.check_app.outputs.app_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ios-app
@@ -127,10 +163,25 @@ jobs:
           retention-days: 30
         continue-on-error: true
 
+      - name: iOS Build Summary
+        run: |
+          echo "## iOS Build Summary" >> $GITHUB_STEP_SUMMARY
+          if [ -f "app-unsigned.ipa" ]; then
+            echo "✅ IPA created successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ IPA creation failed or skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -d "build/ios/iphoneos/Runner.app" ]; then
+            echo "✅ Runner.app created successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Runner.app creation failed or skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+
   build-info:
     name: Build Information
     runs-on: ubuntu-latest
-    needs: [build-android, build-ios]
+    needs: [build-android]
+    if: always()
     
     steps:
       - name: Create build info
@@ -141,10 +192,14 @@ jobs:
           echo "**Commit:** ${{ github.sha }}" >> build-info.md
           echo "**Branch:** ${{ github.ref_name }}" >> build-info.md
           echo "" >> build-info.md
+          echo "## Build Status" >> build-info.md
+          echo "- Android: ${{ needs.build-android.result }}" >> build-info.md
+          echo "- iOS: ${{ needs.build-ios.result }}" >> build-info.md
+          echo "" >> build-info.md
           echo "## Artifacts" >> build-info.md
           echo "- Android APK: Ready for installation" >> build-info.md
           echo "- Android App Bundle: For Google Play Store" >> build-info.md
-          echo "- iOS IPA (Unsigned): Requires manual signing or jailbroken device" >> build-info.md
+          echo "- iOS IPA (Unsigned): May require manual signing (if available)" >> build-info.md
           echo "" >> build-info.md
           echo "## Installation Instructions" >> build-info.md
           echo "" >> build-info.md
@@ -154,9 +209,14 @@ jobs:
           echo "3. Install the APK" >> build-info.md
           echo "" >> build-info.md
           echo "### iOS" >> build-info.md
-          echo "1. Download the unsigned IPA" >> build-info.md
+          echo "1. Download the unsigned IPA (if available)" >> build-info.md
           echo "2. Use tools like AltStore, Sideloadly, or Xcode to sign and install" >> build-info.md
           echo "3. Or use a jailbroken device with AppSync Unified" >> build-info.md
+          echo "" >> build-info.md
+          echo "## Notes" >> build-info.md
+          echo "- iOS builds may fail on GitHub Actions due to missing iOS project files" >> build-info.md
+          echo "- Android APK is the primary deliverable and should always be available" >> build-info.md
+          echo "- For iOS development, build locally on macOS" >> build-info.md
 
       - name: Upload build info
         uses: actions/upload-artifact@v4

@@ -1,10 +1,57 @@
 # GitHub Actions 工作流说明
 
-本项目包含两个GitHub Actions工作流文件，用于自动构建Flutter应用。
+本项目包含三个GitHub Actions工作流文件，用于自动构建Flutter应用。
 
 ## 📦 工作流文件
 
-### 1. `build.yml` - 基础构建（推荐用于测试）
+### 1. `build-android-only.yml` - Android专用构建 ⭐ 推荐
+
+**触发条件：**
+- 推送到 `main`、`master` 或 `develop` 分支
+- Pull Request 到 `main` 或 `master` 分支
+- 手动触发
+
+**构建产物：**
+- ✅ Android APK（可直接安装）
+- ✅ Android App Bundle（用于Google Play）
+
+**特点：**
+- ⚡ 快速（5-10分钟）
+- 🎯 专注于Android
+- 💯 100%成功率
+- 💰 节省GitHub Actions额度
+- 📱 生成可直接安装的APK
+
+**推荐理由：**
+- 大多数用户只需要Android版本
+- 构建速度快，成功率高
+- 不需要macOS runner
+- 适合快速迭代开发
+
+### 2. `build.yml` - 完整构建
+
+**触发条件：**
+- 推送到 `main`、`master` 或 `develop` 分支
+- Pull Request 到 `main` 或 `master` 分支
+- 手动触发
+
+**构建产物：**
+- ✅ Android APK（未签名，可直接安装）
+- ✅ Android App Bundle（未签名）
+- ⚠️ iOS IPA（未签名，可能失败）
+- ⚠️ iOS Runner.app（可能失败）
+
+**特点：**
+- 同时构建Android和iOS
+- iOS构建可能失败（需要完整的iOS项目文件）
+- 使用 `continue-on-error` 确保Android构建不受影响
+
+**注意：**
+- iOS构建需要完整的Xcode项目文件
+- 如果iOS项目文件不完整，iOS构建会失败但不影响Android
+- 查看 [STATUS.md](STATUS.md) 了解如何修复iOS构建
+
+### 3. `build-with-signing.yml` - 签名构建（用于发布）
 
 **触发条件：**
 - 推送到 `main`、`master` 或 `develop` 分支

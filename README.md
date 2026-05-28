@@ -118,16 +118,39 @@ flutter run
 
 本项目配置了GitHub Actions自动构建工作流：
 
-### 自动构建（推送代码时）
+### 工作流说明
+
+#### 1. `build-android-only.yml` - Android专用构建（推荐）
+- ✅ 快速、稳定、可靠
+- ✅ 只构建Android APK和App Bundle
+- ✅ 自动触发（推送代码时）
+- ✅ 构建时间约5-10分钟
+
+#### 2. `build.yml` - 完整构建
 - ✅ Android APK（可直接安装）
 - ✅ Android App Bundle
-- ✅ iOS IPA（未签名）
+- ⚠️ iOS IPA（可能失败，需要完整的iOS项目配置）
 
-### 手动构建（支持签名）
+#### 3. `build-with-signing.yml` - 签名构建
+- ✅ 支持Android和iOS签名
+- ✅ 手动触发
+- ✅ 需要配置GitHub Secrets
+
+### 快速开始
+
+推送代码后，GitHub Actions会自动构建：
+```bash
+git add .
+git commit -m "Update app"
+git push
+```
+
+### 下载APK
+
 1. 进入GitHub仓库的 "Actions" 标签
-2. 选择 "Build Flutter App" 或 "Build Flutter App (With Signing)"
-3. 点击 "Run workflow"
-4. 下载构建产物
+2. 选择最新的成功构建
+3. 在 "Artifacts" 部分下载 `android-apk`
+4. 解压并安装APK
 
 详细说明请查看：[.github/workflows/README.md](.github/workflows/README.md)
 
