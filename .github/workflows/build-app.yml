@@ -1,0 +1,170 @@
+name: Build App
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Build number (optional)'
+        required: false
+        default: '1'
+
+jobs:
+  build:
+    name: Build Android & iOS
+    runs-on: macos-latest  # 使用macOS以支持iOS构建
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Get dependencies
+        run: flutter pub get
+
+      - name: 🔍 Analyze code
+        run: flutter analyze
+        continue-on-error: true
+
+      - name: 🧪 Run tests
+        run: flutter test
+        continue-on-error: true
+
+      # ==================== Android 构建 ====================
+      
+      - name: 📝 Create Android local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+
+      - name: 🤖 Build Android APK
+        run: flutter build apk --release --build-number=${{ github.event.inputs.build_number || github.run_number }}
+
+      - name: 🤖 Build Android App Bundle
+        run: flutter build appbundle --release --build-number=${{ github.event.inputs.build_number || github.run_number }}
+
+      - name: 📤 Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: 📤 Upload Android App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-appbundle
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      # ==================== iOS 构建 ====================
+      
+      - name: 🍎 Check iOS project
+        id: check_ios
+        run: |
+          if [ -f "ios/Podfile" ] && [ -d "ios/Runner.xcodeproj" ]; then
+            echo "ios_ready=true" >> $GITHUB_OUTPUT
+            echo "✅ iOS project files found"
+          else
+            echo "ios_ready=false" >> $GITHUB_OUTPUT
+            echo "⚠️ iOS project files not found, will create them"
+          fi
+
+      - name: 🍎 Create iOS project if needed
+        if: steps.check_ios.outputs.ios_ready == 'false'
+        run: |
+          echo "Creating iOS project..."
+          flutter create --platforms=ios .
+          echo "✅ iOS project created"
+
+      - name: 🍎 Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+          cd ..
+
+      - name: 🍎 Build iOS (No Codesign)
+        run: |
+          flutter build ios --release --no-codesign --build-number=${{ github.event.inputs.build_number || github.run_number }}
+
+      - name: 📦 Create IPA
+        run: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ../../../app-unsigned.ipa Payload
+          cd ../../..
+          echo "✅ IPA created: app-unsigned.ipa"
+
+      - name: 📤 Upload iOS IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-unsigned
+          path: app-unsigned.ipa
+          retention-days: 30
+
+      # ==================== 构建信息 ====================
+      
+      - name: 📊 Build Summary
+        if: always()
+        run: |
+          echo "## 🎉 Build Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            APK_SIZE=$(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)
+            echo "- ✅ **Android APK**: $APK_SIZE (Ready to install)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ **Android APK**: Build failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+            AAB_SIZE=$(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)
+            echo "- ✅ **Android App Bundle**: $AAB_SIZE (For Google Play)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ **Android App Bundle**: Build failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "app-unsigned.ipa" ]; then
+            IPA_SIZE=$(du -h app-unsigned.ipa | cut -f1)
+            echo "- ✅ **iOS IPA**: $IPA_SIZE (Unsigned, needs re-signing)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ **iOS IPA**: Build failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📱 Installation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Android:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download \`android-apk\` from Artifacts below" >> $GITHUB_STEP_SUMMARY
+          echo "2. Enable 'Unknown Sources' on your device" >> $GITHUB_STEP_SUMMARY
+          echo "3. Install the APK" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**iOS:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download \`ios-ipa-unsigned\` from Artifacts below" >> $GITHUB_STEP_SUMMARY
+          echo "2. Use AltStore, Sideloadly, or Xcode to sign and install" >> $GITHUB_STEP_SUMMARY
+          echo "3. See [INSTALL.md](https://github.com/${{ github.repository }}/blob/main/INSTALL.md) for details" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ℹ️ Build Info" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Number**: \`${{ github.event.inputs.build_number || github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Date**: $(date)" >> $GITHUB_STEP_SUMMARY

@@ -1,232 +1,219 @@
 # GitHub Actions 工作流说明
 
-本项目包含三个GitHub Actions工作流文件，用于自动构建Flutter应用。
+## 📦 主工作流：`build-app.yml`
 
-## 📦 工作流文件
+这是唯一启用的工作流，用于同时构建Android和iOS应用。
 
-### 1. `build-android-only.yml` - Android专用构建 ⭐ 推荐
+### 触发条件
 
-**触发条件：**
-- 推送到 `main`、`master` 或 `develop` 分支
-- Pull Request 到 `main` 或 `master` 分支
-- 手动触发
+- ✅ 推送到 `main`、`master` 或 `develop` 分支
+- ✅ Pull Request
+- ✅ 手动触发
 
-**构建产物：**
-- ✅ Android APK（可直接安装）
-- ✅ Android App Bundle（用于Google Play）
+### 构建产物
 
-**特点：**
-- ⚡ 快速（5-10分钟）
-- 🎯 专注于Android
-- 💯 100%成功率
-- 💰 节省GitHub Actions额度
-- 📱 生成可直接安装的APK
+- ✅ **Android APK** - 可直接安装
+- ✅ **Android App Bundle** - 用于Google Play
+- ✅ **iOS IPA** - 未签名，需要重新签名
 
-**推荐理由：**
-- 大多数用户只需要Android版本
-- 构建速度快，成功率高
-- 不需要macOS runner
-- 适合快速迭代开发
+### 特点
 
-### 2. `build.yml` - 完整构建
+- 🍎 使用macOS runner以支持iOS构建
+- 🤖 自动构建Android APK和App Bundle
+- 📦 自动创建iOS项目文件（如果不存在）
+- 🔄 自动安装CocoaPods依赖
+- 📊 详细的构建摘要
 
-**触发条件：**
-- 推送到 `main`、`master` 或 `develop` 分支
-- Pull Request 到 `main` 或 `master` 分支
-- 手动触发
+## 🚀 使用方法
 
-**构建产物：**
-- ✅ Android APK（未签名，可直接安装）
-- ✅ Android App Bundle（未签名）
-- ⚠️ iOS IPA（未签名，可能失败）
-- ⚠️ iOS Runner.app（可能失败）
+### 自动构建（推荐）
 
-**特点：**
-- 同时构建Android和iOS
-- iOS构建可能失败（需要完整的iOS项目文件）
-- 使用 `continue-on-error` 确保Android构建不受影响
+推送代码到GitHub：
 
-**注意：**
-- iOS构建需要完整的Xcode项目文件
-- 如果iOS项目文件不完整，iOS构建会失败但不影响Android
-- 查看 [STATUS.md](STATUS.md) 了解如何修复iOS构建
+```bash
+git add .
+git commit -m "Update app"
+git push
+```
 
-### 3. `build-with-signing.yml` - 签名构建（用于发布）
+GitHub Actions会自动开始构建，大约15-20分钟后完成。
 
-**触发条件：**
-- 推送到 `main`、`master` 或 `develop` 分支
-- Pull Request 到 `main` 或 `master` 分支
-- 手动触发
+### 手动触发
 
-**构建产物：**
-- ✅ Android APK（未签名，可直接安装）
-- ✅ Android App Bundle（未签名）
-- ✅ iOS IPA（未签名，需要重新签名）
-- ✅ iOS Runner.app
+1. 进入GitHub仓库
+2. 点击 "Actions" 标签
+3. 选择 "Build App" 工作流
+4. 点击 "Run workflow"
+5. （可选）输入构建号
+6. 点击绿色的 "Run workflow" 按钮
 
-**特点：**
-- 无需配置任何证书
-- Android APK可以直接安装（需要启用"未知来源"）
-- iOS需要使用第三方工具重新签名
+### 下载构建产物
 
-### 2. `build-with-signing.yml` - 签名构建（用于发布）
+1. 进入 [Actions](https://github.com/976853694/liuquapp/actions) 页面
+2. 选择最新的成功构建（绿色✅）
+3. 滚动到页面底部的 "Artifacts" 部分
+4. 下载需要的文件：
+   - `android-apk` - Android安装包
+   - `android-appbundle` - Android App Bundle
+   - `ios-ipa-unsigned` - iOS安装包（未签名）
 
-**触发条件：**
-- 仅手动触发
-
-**构建产物：**
-- ✅ Android APK（已签名，如果配置了密钥）
-- ✅ Android App Bundle（已签名，如果配置了密钥）
-- ✅ iOS IPA（已签名，如果配置了证书）
-
-**特点：**
-- 支持使用GitHub Secrets配置证书
-- 如果未配置证书，则生成未签名版本
-- 可以指定版本号和构建号
-
-## 🔧 配置说明
-
-### Android签名配置（可选）
-
-如果需要签名的Android应用，需要在GitHub仓库的Settings > Secrets中添加：
-
-1. **ANDROID_KEYSTORE_BASE64**: Android密钥库文件的Base64编码
-   ```bash
-   # 生成密钥库
-   keytool -genkey -v -keystore release.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
-   
-   # 转换为Base64
-   base64 release.keystore | tr -d '\n' > keystore.txt
-   # 将keystore.txt的内容复制到GitHub Secret
-   ```
-
-2. **ANDROID_KEYSTORE_PASSWORD**: 密钥库密码
-3. **ANDROID_KEY_ALIAS**: 密钥别名
-4. **ANDROID_KEY_PASSWORD**: 密钥密码
-
-### iOS签名配置（可选）
-
-如果需要签名的iOS应用，需要在GitHub仓库的Settings > Secrets中添加：
-
-1. **IOS_CERTIFICATE_BASE64**: iOS证书(.p12)的Base64编码
-   ```bash
-   # 从Keychain导出证书为.p12文件
-   # 然后转换为Base64
-   base64 certificate.p12 | tr -d '\n' > certificate.txt
-   # 将certificate.txt的内容复制到GitHub Secret
-   ```
-
-2. **IOS_CERTIFICATE_PASSWORD**: 证书密码
-3. **IOS_PROVISIONING_PROFILE_BASE64**: 配置文件(.mobileprovision)的Base64编码
-   ```bash
-   base64 profile.mobileprovision | tr -d '\n' > profile.txt
-   # 将profile.txt的内容复制到GitHub Secret
-   ```
-
-## 📱 安装说明
+## � 安装说明
 
 ### Android安装
 
-#### 方法1：直接安装APK（推荐）
-1. 从GitHub Actions的Artifacts下载 `android-apk`
+1. 下载 `android-apk` 并解压
 2. 在Android设备上启用"未知来源"安装
-   - 设置 > 安全 > 未知来源
-3. 安装APK文件
+3. 传输APK到设备并安装
 
-#### 方法2：使用ADB安装
+或使用ADB：
 ```bash
 adb install app-release.apk
 ```
 
 ### iOS安装
 
-由于iOS的安全限制，未签名的IPA需要重新签名才能安装。
+iOS应用需要重新签名才能安装。推荐工具：
 
-#### 方法1：使用AltStore（推荐，无需越狱）
-1. 安装 [AltStore](https://altstore.io/)
-2. 下载未签名的IPA
-3. 使用AltStore安装IPA
-4. 每7天需要重新签名（免费Apple ID）
+- **AltStore**（无需越狱）- [altstore.io](https://altstore.io/)
+- **Sideloadly**（无需越狱）- [sideloadly.io](https://sideloadly.io/)
+- **Xcode**（开发者）
 
-#### 方法2：使用Sideloadly（推荐，无需越狱）
-1. 安装 [Sideloadly](https://sideloadly.io/)
-2. 连接iOS设备到电脑
-3. 使用Apple ID登录
-4. 选择IPA文件并安装
+详细说明请查看 [INSTALL.md](../../INSTALL.md)
 
-#### 方法3：使用Xcode
-1. 下载 `Runner.app`
-2. 打开Xcode
-3. Window > Devices and Simulators
-4. 选择你的设备
-5. 拖拽 `Runner.app` 到设备
+## � 工作流详情
 
-#### 方法4：越狱设备
-1. 安装 AppSync Unified
-2. 直接安装未签名的IPA
+### 构建步骤
 
-#### 方法5：使用iOS App Signer
-1. 下载 [iOS App Signer](https://dantheman827.github.io/ios-app-signer/)
-2. 选择未签名的IPA
-3. 选择你的签名证书
-4. 重新签名并安装
+1. **准备环境**
+   - 检出代码
+   - 安装Java 17
+   - 安装Flutter 3.24.0
 
-## 🚀 使用方法
+2. **代码检查**
+   - 获取依赖
+   - 代码分析
+   - 运行测试
 
-### 自动构建
-每次推送代码到主分支时，GitHub Actions会自动构建应用。
+3. **Android构建**
+   - 创建local.properties
+   - 构建APK
+   - 构建App Bundle
+   - 上传产物
 
-### 手动构建
-1. 进入GitHub仓库
-2. 点击 "Actions" 标签
-3. 选择工作流（`Build Flutter App` 或 `Build Flutter App (With Signing)`）
-4. 点击 "Run workflow"
-5. 填写版本号（可选）
-6. 点击 "Run workflow" 按钮
+4. **iOS构建**
+   - 检查iOS项目文件
+   - 如果需要，创建iOS项目
+   - 安装CocoaPods依赖
+   - 构建iOS应用（无签名）
+   - 创建IPA
+   - 上传产物
 
-### 下载构建产物
-1. 进入GitHub仓库的 "Actions" 标签
-2. 选择一个完成的工作流运行
-3. 在 "Artifacts" 部分下载需要的文件
+5. **构建摘要**
+   - 显示构建结果
+   - 显示文件大小
+   - 提供安装说明
 
-## 📝 注意事项
+## ⏱️ 构建时间
 
-1. **Android APK** 可以直接安装，无需签名
-2. **iOS IPA** 需要重新签名才能在非越狱设备上安装
-3. 构建产物会保留30天
-4. 如果不配置签名证书，Android和iOS都会生成未签名版本
-5. 未签名的Android APK在大多数设备上可以正常安装
-6. iOS应用必须签名才能在非越狱设备上运行
+- **总时间**: 约15-20分钟
+- **Android构建**: 约5-8分钟
+- **iOS构建**: 约10-12分钟
 
-## 🔒 安全建议
+## 💰 成本
 
-1. 不要在代码中硬编码证书或密码
-2. 使用GitHub Secrets存储敏感信息
-3. 定期更新证书和密钥
-4. 不要将密钥库文件提交到Git仓库
-5. 使用不同的密钥用于开发和生产环境
+- **公开仓库**: 免费，无限制
+- **私有仓库**: 使用GitHub Actions免费额度（2000分钟/月）
+- **macOS runner**: 消耗10倍分钟数（1分钟 = 10分钟额度）
+
+## 📊 构建状态
+
+在README中添加状态徽章：
+
+```markdown
+[![Build Status](https://github.com/976853694/liuquapp/workflows/Build%20App/badge.svg)](https://github.com/976853694/liuquapp/actions)
+```
+
+效果：
+[![Build Status](https://github.com/976853694/liuquapp/workflows/Build%20App/badge.svg)](https://github.com/976853694/liuquapp/actions)
 
 ## 🐛 故障排除
 
 ### Android构建失败
-- 检查Java版本是否正确（需要Java 17）
-- 检查Gradle配置
-- 查看构建日志中的错误信息
+
+**常见原因**：
+- Gradle配置错误
+- Java版本不匹配
+- 依赖冲突
+
+**解决方案**：
+```bash
+flutter clean
+flutter pub get
+flutter build apk --release
+```
 
 ### iOS构建失败
-- 确保使用macOS runner
-- 检查证书和配置文件是否正确
-- 查看Xcode构建日志
 
-### 无法安装应用
-- **Android**: 确保启用了"未知来源"安装
-- **iOS**: 确保应用已正确签名，或使用第三方工具重新签名
+**常见原因**：
+- CocoaPods依赖问题
+- Xcode配置错误
+- 签名问题
 
-## 📚 相关资源
+**解决方案**：
+```bash
+cd ios
+pod deintegrate
+pod install
+cd ..
+flutter clean
+flutter build ios --release --no-codesign
+```
 
-- [Flutter官方文档](https://flutter.dev/docs)
-- [GitHub Actions文档](https://docs.github.com/en/actions)
-- [Android应用签名](https://developer.android.com/studio/publish/app-signing)
-- [iOS代码签名](https://developer.apple.com/support/code-signing/)
-- [AltStore](https://altstore.io/)
-- [Sideloadly](https://sideloadly.io/)
+### 无法下载Artifacts
+
+**原因**：
+- 构建未完成
+- Artifacts已过期（30天）
+
+**解决方案**：
+- 等待构建完成
+- 重新触发构建
+
+## 📚 相关文档
+
+- [INSTALL.md](../../INSTALL.md) - 详细的安装指南
+- [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md) - 故障排除指南
+- [QUICKSTART.md](../../QUICKSTART.md) - 快速开始指南
+
+## 🔐 签名构建（可选）
+
+如果需要签名的发布版本，可以使用 `build-with-signing.yml` 工作流。
+
+需要在GitHub Secrets中配置：
+
+### Android签名
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+### iOS签名
+- `IOS_CERTIFICATE_BASE64`
+- `IOS_CERTIFICATE_PASSWORD`
+- `IOS_PROVISIONING_PROFILE_BASE64`
+
+## 💡 最佳实践
+
+1. **开发阶段**: 使用自动构建，每次推送都会构建
+2. **测试阶段**: 下载Artifacts进行测试
+3. **发布阶段**: 使用签名构建工作流
+
+## 🎯 总结
+
+- ✅ 一个工作流同时构建Android和iOS
+- ✅ 自动触发，无需手动操作
+- ✅ 15-20分钟完成构建
+- ✅ 生成可安装的APK和IPA
+- ✅ 详细的构建摘要和日志
+
+现在推送代码，让GitHub Actions自动构建你的应用吧！🚀
