@@ -48,6 +48,11 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+
       - name: Create keystore directory
         run: mkdir -p android/app/keystore
 

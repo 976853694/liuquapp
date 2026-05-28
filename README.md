@@ -11,6 +11,7 @@
 - 🚀 [快速开始](QUICKSTART.md) - 本地开发和构建指南
 - 📱 [安装指南](INSTALL.md) - 详细的应用安装说明
 - 🔧 [CI/CD说明](.github/workflows/README.md) - GitHub Actions工作流文档
+- 🐛 [故障排除](TROUBLESHOOTING.md) - 常见问题和解决方案
 
 ## 🎨 功能特点
 

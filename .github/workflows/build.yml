@@ -38,6 +38,11 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+
       - name: Analyze code
         run: flutter analyze
         continue-on-error: true
