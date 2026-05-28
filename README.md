@@ -130,9 +130,9 @@ git push
 
 ### 📱 构建产物
 
-- ✅ **Android APK** - 可直接安装
+- ✅ **Android APK** - 可直接安装（5-8分钟）
 - ✅ **Android App Bundle** - 用于Google Play
-- ✅ **iOS IPA** - 未签名，需要重新签名
+- ✅ **iOS IPA** - 未签名，需要重新签名（10-15分钟）
 
 ### 📥 下载应用
 
@@ -145,13 +145,14 @@ git push
 
 ### ⏱️ 构建时间
 
-- 完整构建（Android + iOS）：约15-20分钟
-- 使用macOS runner以支持iOS构建
+- Android构建：约5-8分钟
+- iOS构建：约10-15分钟
+- 总时间：约15-20分钟
 
-详细说明请查看：
-- 📖 [快速开始](QUICKSTART.md)
-- 📱 [安装指南](INSTALL.md)
-- 🔧 [CI/CD说明](.github/workflows/README.md)
+### 📖 详细文档
+
+- 📱 [安装指南](INSTALL.md) - 如何安装APK和IPA
+- 🚀 [快速开始](QUICKSTART.md) - 本地开发指南
 
 ## 📱 安装方法
 

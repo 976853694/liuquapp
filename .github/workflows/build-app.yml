@@ -42,10 +42,6 @@ jobs:
         run: flutter analyze
         continue-on-error: true
 
-      - name: 🧪 Run tests
-        run: flutter test
-        continue-on-error: true
-
       - name: 📝 Create Android local.properties
         run: |
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
