@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     
     <application
-        android:label="发现"
+        android:label="六趣Rhex"
         android:name="${applicationName}">
         
         <activity
