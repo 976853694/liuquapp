@@ -1,0 +1,161 @@
+name: Build Flutter App
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number'
+        required: false
+        default: '1.0.0'
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
+        continue-on-error: true
+
+      - name: Run tests
+        run: flutter test
+        continue-on-error: true
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Build App Bundle
+        run: flutter build appbundle --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Upload App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-appbundle
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
+        continue-on-error: true
+
+      - name: Run tests
+        run: flutter test
+        continue-on-error: true
+
+      - name: Build iOS (No Codesign)
+        run: |
+          flutter build ios --release --no-codesign
+        continue-on-error: true
+
+      - name: Create IPA (Unsigned)
+        run: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r app-unsigned.ipa Payload
+          mv app-unsigned.ipa ../../..
+        continue-on-error: true
+
+      - name: Upload iOS IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-unsigned
+          path: app-unsigned.ipa
+          retention-days: 30
+        continue-on-error: true
+
+      - name: Upload iOS App
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app
+          path: build/ios/iphoneos/Runner.app
+          retention-days: 30
+        continue-on-error: true
+
+  build-info:
+    name: Build Information
+    runs-on: ubuntu-latest
+    needs: [build-android, build-ios]
+    
+    steps:
+      - name: Create build info
+        run: |
+          echo "# Build Information" > build-info.md
+          echo "" >> build-info.md
+          echo "**Build Date:** $(date)" >> build-info.md
+          echo "**Commit:** ${{ github.sha }}" >> build-info.md
+          echo "**Branch:** ${{ github.ref_name }}" >> build-info.md
+          echo "" >> build-info.md
+          echo "## Artifacts" >> build-info.md
+          echo "- Android APK: Ready for installation" >> build-info.md
+          echo "- Android App Bundle: For Google Play Store" >> build-info.md
+          echo "- iOS IPA (Unsigned): Requires manual signing or jailbroken device" >> build-info.md
+          echo "" >> build-info.md
+          echo "## Installation Instructions" >> build-info.md
+          echo "" >> build-info.md
+          echo "### Android" >> build-info.md
+          echo "1. Download the APK file" >> build-info.md
+          echo "2. Enable 'Install from Unknown Sources' in Settings" >> build-info.md
+          echo "3. Install the APK" >> build-info.md
+          echo "" >> build-info.md
+          echo "### iOS" >> build-info.md
+          echo "1. Download the unsigned IPA" >> build-info.md
+          echo "2. Use tools like AltStore, Sideloadly, or Xcode to sign and install" >> build-info.md
+          echo "3. Or use a jailbroken device with AppSync Unified" >> build-info.md
+
+      - name: Upload build info
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-info
+          path: build-info.md
+          retention-days: 30

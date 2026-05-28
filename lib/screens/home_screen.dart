@@ -43,9 +43,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('首页-狐书'),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.more_horiz),
@@ -75,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // 帖子列表
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.only(top: 8, bottom: 80),
               itemCount: _posts.length,
               itemBuilder: (context, index) {
                 return PostCard(post: _posts[index]);
