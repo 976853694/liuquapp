@@ -42,8 +42,8 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      // Start with login screen, change to MainScreen() to skip login
-      home: const LoginScreen(),
+      // Start with main screen (home page)
+      home: const MainScreen(),
     );
   }
 }
