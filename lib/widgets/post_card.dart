@@ -235,7 +235,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     return SizedBox(
       height: 120,
       child: Row(
-        children: images.take(3).asMap().entries.map((entry) {
+        children: images.take(3).toList().asMap().entries.map((entry) {
           int index = entry.key;
           return Expanded(
             child: Hero(
