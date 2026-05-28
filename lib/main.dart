@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/feed_screen.dart';
+import 'screens/messages_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/create_post_screen.dart';
 import 'widgets/animated_bottom_nav.dart';
 
 void main() {
@@ -20,7 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '发现',
+      title: '狐书',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.green,
@@ -36,7 +42,8 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const MainScreen(),
+      // Start with login screen, change to MainScreen() to skip login
+      home: const LoginScreen(),
     );
   }
 }
@@ -54,9 +61,9 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const TopicScreen(),
-    const PublishScreen(),
-    const MessageScreen(),
+    const FeedScreen(),
+    const CreatePostScreen(),
+    const NotificationsScreen(),
     const ProfileScreen(),
   ];
 
@@ -93,6 +100,11 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index == 2) {
+            // Navigate to create post screen
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CreatePostScreen()),
+            );
             return;
           }
           setState(() {
@@ -101,42 +113,5 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         },
       ),
     );
-  }
-}
-
-// 占位页面
-class TopicScreen extends StatelessWidget {
-  const TopicScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('话题'));
-  }
-}
-
-class PublishScreen extends StatelessWidget {
-  const PublishScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('发布'));
-  }
-}
-
-class MessageScreen extends StatelessWidget {
-  const MessageScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('消息'));
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('我'));
   }
 }

@@ -89,10 +89,10 @@ class _AnimatedBottomNavState extends State<AnimatedBottomNav> with TickerProvid
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildNavItem(0, Icons.explore_outlined, Icons.explore, '发现'),
-                  _buildNavItem(1, Icons.chat_bubble_outline, Icons.chat_bubble, '话题'),
+                  _buildNavItem(0, Icons.home_outlined, Icons.home, '首页'),
+                  _buildNavItem(1, Icons.explore_outlined, Icons.explore, '动态'),
                   _buildFAB(),
-                  _buildNavItem(3, Icons.notifications_outlined, Icons.notifications, '消息'),
+                  _buildNavItem(3, Icons.notifications_outlined, Icons.notifications, '通知'),
                   _buildNavItem(4, Icons.person_outline, Icons.person, '我'),
                 ],
               ),
